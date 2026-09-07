@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DrawdownCap: A limit down. The pool may not fall more than a fixed distance below where the current epoch opened, and the limit resets on a schedule rather than on anyone's say-so</title>
+<meta name="description" content="A limit down. The pool may not fall more than a fixed distance below where the current epoch opened, and the limit resets on a schedule rather than on anyone's say-so.">
+<link rel="canonical" href="https://drawdown-cap.pages.dev/">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="theme-color" content="#07080b">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="DrawdownCap">
+<meta property="og:title" content="DrawdownCap">
+<meta property="og:description" content="A limit down. The pool may not fall more than a fixed distance below where the current epoch opened, and the limit resets on a schedule rather than on anyone's say-so.">
+<meta property="og:url" content="https://drawdown-cap.pages.dev/">
+<meta property="og:image" content="https://drawdown-cap.pages.dev/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="DrawdownCap">
+<meta name="twitter:description" content="A limit down. The pool may not fall more than a fixed distance below where the current epoch opened, and the limit resets on a schedule rather than on anyone's say-so.">
+<meta name="twitter:image" content="https://drawdown-cap.pages.dev/og.png">
+
+<link rel="stylesheet" href="/assets/site.css">
+<link rel="alternate" type="text/plain" title="For language models" href="/llms.txt">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareSourceCode","name":"DrawdownCap","description":"A limit down. The pool may not fall more than a fixed distance below where the current epoch opened, and the limit resets on a schedule rather than on anyone's say-so.","url":"https://drawdown-cap.pages.dev","codeRepository":"https://github.com/nirholas/drawdown-cap","programmingLanguage":"Solidity","runtimePlatform":"Ethereum Virtual Machine","license":"https://opensource.org/licenses/MIT","keywords":"risk, circuit-breaker, oracle-free, no-admin","isPartOf":{"@type":"WebSite","name":"HookForge","url":"https://hookforge.pages.dev"}}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="masthead">
+  <div class="shell masthead__inner">
+    <a class="brand" href="/">DrawdownCap</a>
+    <nav aria-label="Primary">
+      <a href="#how">How it works</a>
+      <a href="#using">Using it</a>
+      <a href="#deploy">Deploy</a>
+      <a href="https://github.com/nirholas/drawdown-cap" rel="noopener">GitHub</a>
+      <a href="https://hookforge.pages.dev" rel="noopener">Catalogue</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <section class="shell hero">
+    <p class="eyebrow">Uniswap v4 hook &middot; Risk</p>
+    <h1>DrawdownCap</h1>
+    <p class="lede">A limit down. The pool may not fall more than a fixed distance below where the current epoch opened, and the limit resets on a schedule rather than on anyone's say-so.</p>
+    <div class="cta-row">
+      <a class="btn btn--primary" href="https://github.com/nirholas/drawdown-cap" rel="noopener">Source on GitHub</a>
+      <a class="btn" href="#using">Use it in a pool</a>
+      <a class="btn" href="/hook.json">Manifest JSON</a>
+    </div>
+
+    <div class="scene">
+      <canvas data-permissions="{&quot;afterRemoveLiquidityReturnsDelta&quot;:false,&quot;afterAddLiquidityReturnsDelta&quot;:false,&quot;afterSwapReturnsDelta&quot;:false,&quot;beforeSwapReturnsDelta&quot;:false,&quot;afterDonate&quot;:false,&quot;beforeDonate&quot;:false,&quot;afterSwap&quot;:true,&quot;beforeSwap&quot;:true,&quot;afterRemoveLiquidity&quot;:false,&quot;beforeRemoveLiquidity&quot;:false,&quot;afterAddLiquidity&quot;:false,&quot;beforeAddLiquidity&quot;:false,&quot;afterInitialize&quot;:true,&quot;beforeInitialize&quot;:false}" aria-hidden="true"></canvas>
+      <p class="scene__fallback">DrawdownCap implements 3 of the fourteen Uniswap v4 callbacks: afterInitialize, beforeSwap, afterSwap.</p>
+    </div>
+
+    <dl class="stats">
+      <div class="stat"><dt>Family</dt><dd>Risk</dd></div>
+      <div class="stat"><dt>Callbacks</dt><dd>3 of 14</dd></div>
+      <div class="stat"><dt>Fee</dt><dd>static</dd></div>
+      <div class="stat"><dt>Admin keys</dt><dd>none</dd></div>
+      <div class="stat"><dt>Licence</dt><dd>MIT</dd></div>
+    </dl>
+  </section>
+
+  <section class="shell">
+    <h2 id="how">How it works</h2>
+      <p>{CircuitBreakerHook} is symmetric and reactive: a violent move in either direction halts the pool, then the halt clears. This is the other shape, and it is the one commodity and equity venues actually use. It is asymmetric, because a collapse and a rally are not the same event for the people holding the asset.</p>
+      <p>It is a hard cap rather than a trigger, so the fall never happens rather than being noticed after it did. And it resets on a clock, so everyone can see in advance when selling reopens and at what level. allowed while openTick - tick &lt;= maxFallTicks, where openTick is the tick at the start of the epoch Buying is never restricted.</p>
+      <p>A pool at its limit can still be bid up, and doing so does not raise the limit for that epoch, because the reference is the epoch's opening price and not a running high. When the epoch rolls, the pool takes its current price as the new opening and gets a fresh allowance. As with {RatchetFloorHook}, the cap is expressed as a price a router can trade into: {sqrtPriceLimitDownX96} returns the value to pass as a swap's `sqrtPriceLimitX96`, so a seller fills as far as the cap allows and stops there.</p>
+      <p>The `afterSwap` revert is the backstop for callers that pass no limit. Liquidity operations are never blocked, so nobody is trapped by a limit-down epoch. One tick is one basis point to within rounding, so `maxFallTicks = 1000` is a ten percent daily limit.</p>
+
+    <div class="callout callout--prior"><h3>Prior art</h3><p>Trading halts and price bands are standard on regulated venues and absent on-chain, where the closest equivalents are governance pause switches and oracle-deviation guards. Hook implementations of trading hours exist. A scheduled, asymmetric, self-resetting limit down with no privileged role does not.</p></div>
+    <div class="callout callout--warn"><h3>Where it does not help</h3><p>A limit down does not stop a decline, it defers one. If the market has genuinely repriced, the pool reopens each epoch and falls again, one limit at a time, and in the meantime the gap between the pool and the real price is an arbitrage that grows. It buys holders time to react, which is worth something, and it costs liquidity providers the trades they would rather have made, which is not free.</p></div>
+
+    <h2 id="using">Using it</h2>
+    <p>
+      Uniswap v4 removed <code>hookData</code> from <code>initialize</code>, so per-pool parameters arrive out of band.
+      Fix them for a pool key whose pool does not exist yet, then initialize. Nobody can change them afterwards,
+      including you.
+    </p>
+    <pre><code>hook.configure(
+    key,
+    DrawdownCapHook.Config({
+        maxFallTicks: /* uint24 */ 0,
+        epochSeconds: /* uint32 */ 0
+    })
+);
+
+poolManager.initialize(key, startingSqrtPriceX96);</code></pre>
+    
+
+    <h3>Parameters</h3>
+    <table>
+        <thead><tr><th>Parameter</th><th>Type</th><th>Units</th></tr></thead>
+        <tbody><tr><td><code>maxFallTicks</code></td><td><code>uint24</code></td><td>ticks</td></tr>
+          <tr><td><code>epochSeconds</code></td><td><code>uint32</code></td><td>seconds</td></tr></tbody>
+      </table>
+
+    <h3>From TypeScript</h3>
+    <pre><code>npm i @hookforge/sdk
+
+import {getHook, hookAddress, poolKeyFor} from "@hookforge/sdk";
+
+const hook = getHook("drawdown-cap");
+const key  = poolKeyFor({
+  hook: hookAddress("drawdown-cap", 8453),   // Base
+  currencyA: USDC, currencyB: WETH,
+  tickSpacing: 60,
+});</code></pre>
+
+    <h2>What it reverts with</h2>
+    <table>
+        <thead><tr><th>Error</th><th>Meaning</th></tr></thead>
+        <tbody><tr><td><code>InvalidConfig()</code></td><td><code>maxFallTicks</code> or <code>epochSeconds</code> was zero.</td></tr>
+          <tr><td><code>LimitDown(int24,int24)</code></td><td>The swap would take the pool past this epoch's limit down. Pass <code>sqrtPriceLimitDownX96</code> as a price limit.</td></tr>
+          <tr><td><code>PoolAlreadyInitialized()</code></td><td>The pool already exists, so its configuration is final.</td></tr>
+          <tr><td><code>PoolNotConfigured()</code></td><td>The pool was initialized without a configuration for this hook.</td></tr></tbody>
+      </table>
+
+    <h2>The callbacks it claims</h2>
+    <p>
+      Uniswap v4 reads a hook's permissions from the low fourteen bits of its own address, which is why deploying one
+      means mining a CREATE2 salt. This hook claims 3, so every deployment of it has an address ending
+      in <code>0x10c0</code>.
+    </p>
+    <ul class="flags"><li class="flag">beforeInitialize</li><li class="flag flag--on">afterInitialize</li><li class="flag">beforeAddLiquidity</li><li class="flag">afterAddLiquidity</li><li class="flag">beforeRemoveLiquidity</li><li class="flag">afterRemoveLiquidity</li><li class="flag flag--on">beforeSwap</li><li class="flag flag--on">afterSwap</li><li class="flag">beforeDonate</li><li class="flag">afterDonate</li><li class="flag">beforeSwapReturnsDelta</li><li class="flag">afterSwapReturnsDelta</li><li class="flag">afterAddLiquidityReturnsDelta</li><li class="flag">afterRemoveLiquidityReturnsDelta</li></ul>
+
+    <h2>It says what it is, on-chain</h2>
+    <p>
+      Nothing about a hook's address tells an indexer, a wallet, a router or an agent what the pool does, which is why
+      hook discovery today is a curated list. This hook answers for itself, in one <code>eth_call</code>, with no
+      registry in the loop.
+    </p>
+    <pre><code>cast call $HOOK "hookName()(string)"    # DrawdownCap
+cast call $HOOK "specURI()(string)"     # https://drawdown-cap.pages.dev/hook.json
+cast call $HOOK "hookTags()(string[])"  # risk, circuit-breaker, oracle-free, no-admin</code></pre>
+
+    <h2 id="deploy">Build, test and deploy</h2>
+    <pre><code>git clone --recurse-submodules https://github.com/nirholas/drawdown-cap
+cd drawdown-cap
+forge build &amp;&amp; forge test
+
+# Dry run: mines the salt, prints the address, sends nothing.
+forge script script/Deploy.s.sol --rpc-url $RPC_URL
+
+# For real.
+forge script script/Deploy.s.sol --rpc-url $RPC_URL --broadcast --verify</code></pre>
+
+    <div class="callout callout--warn">
+      <h3>Status</h3>
+      <p>
+        <strong>Unaudited.</strong> Built to an audited shape, on OpenZeppelin's audited hook bases, and tested against
+        a real <code>PoolManager</code>. No third party has reviewed it. Read "where it does not help" above before
+        putting money behind it. Not affiliated with Uniswap Labs.
+      </p>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="shell">
+    <p>
+      <a href="https://github.com/nirholas/drawdown-cap" rel="noopener">Source</a> &middot;
+      <a href="/hook.json">Manifest</a> &middot;
+      <a href="/llms.txt">llms.txt</a> &middot;
+      <a href="https://hookforge.pages.dev" rel="noopener">The rest of the catalogue</a>
+    </p>
+    <p>MIT licensed. Not affiliated with Uniswap Labs.</p>
+  </div>
+</footer>
+<script type="module" src="/assets/scene.js"></script>
+</body>
+</html>

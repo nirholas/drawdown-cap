@@ -1,0 +1,29 @@
+{
+  "name": "drawdown-cap",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A limit down. The pool may not fall more than a fixed distance below where the current epoch opened, and the limit resets on a schedule rather than on anyone's say-so.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nirholas/drawdown-cap.git"
+  },
+  "homepage": "https://drawdown-cap.pages.dev",
+  "keywords": [
+    "uniswap",
+    "uniswap-v4",
+    "uniswap-hooks",
+    "defi",
+    "amm",
+    "solidity",
+    "risk",
+    "circuit-breaker",
+    "oracle-free",
+    "no-admin"
+  ],
+  "scripts": {
+    "build": "node web/build.mjs",
+    "contracts:build": "forge build",
+    "contracts:test": "forge test"
+  }
+}
