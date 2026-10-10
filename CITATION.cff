@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: If you use this software, please cite it as below.
+title: "drawdown-cap"
+abstract: "A limit down. The pool may not fall more than a fixed distance below where the current epoch opened, and the limit resets on a schedule rather than on anyone's say-so."
+license: Apache-2.0
+repository-code: "https://github.com/nirholas/drawdown-cap"
+url: "https://three.ws"
+authors:
+  - name: three.ws
+    website: "https://three.ws"
