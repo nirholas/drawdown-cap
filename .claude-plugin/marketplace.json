@@ -1,0 +1,23 @@
+{
+  "name": "drawdown-cap",
+  "owner": {
+    "name": "nirholas"
+  },
+  "description": "DrawdownCapHook Uniswap v4 hook: build, test, configure and deploy it with a mined CREATE2 salt.",
+  "plugins": [
+    {
+      "name": "drawdown-cap",
+      "source": "./",
+      "description": "DrawdownCapHook Uniswap v4 hook: build, test, configure and deploy it with a mined CREATE2 salt.",
+      "tags": [
+        "uniswap-v4",
+        "hooks",
+        "solidity",
+        "foundry",
+        "risk",
+        "circuit-breaker",
+        "no-admin"
+      ]
+    }
+  ]
+}

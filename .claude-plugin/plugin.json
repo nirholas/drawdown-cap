@@ -1,0 +1,20 @@
+{
+  "name": "drawdown-cap",
+  "version": "1.0.0",
+  "description": "DrawdownCapHook Uniswap v4 hook: build, test, configure and deploy it with a mined CREATE2 salt.",
+  "author": {
+    "name": "nirholas"
+  },
+  "repository": "https://github.com/nirholas/drawdown-cap",
+  "license": "Apache-2.0",
+  "keywords": [
+    "uniswap-v4",
+    "hooks",
+    "solidity",
+    "foundry",
+    "risk",
+    "circuit-breaker",
+    "no-admin"
+  ],
+  "homepage": "https://drawdown-cap.pages.dev"
+}
